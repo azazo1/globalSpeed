@@ -8,13 +8,13 @@ import { Gear, Pin, Zap } from "@/comps/svgs"
 import { Tooltip } from "@/comps/Tooltip"
 import { gvar } from "@/globalVar"
 import { KebabList, KebabListProps } from "@/options/KebabList"
-import { AnyDict, ORL_CONTEXT_KEYS, StateView } from "@/types"
+import { AnyDict, ORL_CONTEXT_KEYS, StateView, URLRule } from "@/types"
 import { cn, feedbackText, isMobile, produce, replaceArgs } from "@/utils/helper"
 import { pushView } from "@/utils/state"
-import { getDefaultFx, getDefaultURLCondition, getDefaultURLConditionPart } from "../defaults"
+import { getDefaultFx, getDefaultURLCondition, getDefaultURLConditionPart, getDefaultURLRule } from "../defaults"
 import { useCaptureStatus } from "../hooks/useCaptureStatus"
 import { SetView, useStateView } from "../hooks/useStateView"
-import { checkFilterDeviation, checkFilterDeviationOrActiveSvg, getActiveParts, requestSyncContextMenu, testURLWithPart } from "../utils/configUtils"
+import { checkFilterDeviation, checkFilterDeviationOrActiveSvg, getActiveParts, hasActiveParts, requestSyncContextMenu, testURL, testURLWithPart } from "../utils/configUtils"
 
 const SUPPORTS_TAB_CAPTURE = !!(chrome.tabCapture?.capture && chrome.offscreen?.createDocument)
 
@@ -54,6 +54,8 @@ export function Header(props: HeaderProps) {
 		circleWidget: true,
 		keybindsUrlCondition: true,
 		sawEnableShortcutOverlayCount: true,
+		sitesOnly: true,
+		rules: true,
 	})
 
 	let kebabInfo: {
@@ -62,7 +64,7 @@ export function Header(props: HeaderProps) {
 		showAlert: boolean
 	} = useMemo(() => {
 		return getKebabList(view, setView)
-	}, [!!view, view?.keybindsUrlCondition, view?.circleWidget])
+	}, [!!view, view?.keybindsUrlCondition, view?.circleWidget, view?.sitesOnly, view?.rules])
 
 	if (!view) return <div></div>
 
@@ -312,6 +314,19 @@ function getKebabList(
 		}
 	}
 
+	// Only shown if on http(s) protocol. Toggle this site in/out of the whitelist,
+	// or into the blacklist when whitelist mode is off.
+	if (gvar.tabInfo.url?.startsWith("http")) {
+		let url = new URL(gvar.tabInfo.url)
+		let siteInfo = getEnableSiteKebabInfo(view, setView, url)
+		fns["site"] = siteInfo.fn
+		list.push({
+			checked: siteInfo.checked,
+			label: replaceArgs(gvar.gsm.token.allowOn, [url.hostname.replace("www.", "")]),
+			name: "site",
+		})
+	}
+
 	// Only shown if on http(s) protocol and have local shortcuts.
 	if (gvar.showShortcutControl) {
 		let url = new URL(gvar.tabInfo.url)
@@ -356,6 +371,74 @@ function getEnableShortcutsKebabInfo(view: StateView, setView: SetView, url: URL
 				}),
 			})
 		},
+	}
+}
+
+/**
+ * 切换当前网站启用状态: 白名单模式 (sitesOnly) 开启时增删白名单规则,
+ * 未开启时增删黑名单 (OFF) 规则. checked 表示当前网站处于启用状态.
+ */
+function getEnableSiteKebabInfo(view: StateView, setView: SetView, url: URL): { checked: boolean; fn: () => void } {
+	const rules = (view.rules || []) as URLRule[]
+	const enabledRules = rules.filter((r) => r.enabled && r.condition && hasActiveParts(r.condition))
+	const sitesOnly = !!view.sitesOnly
+
+	// 当前页面是否命中任意启用规则 (白名单模式下的"在白名单中").
+	const matchedAny = enabledRules.some((r) => testURL(url.href, r.condition, false))
+	// 当前页面是否命中 OFF 规则 (非白名单模式下的"在黑名单中").
+	const matchedOff = enabledRules.some((r) => r.type === "OFF" && testURL(url.href, r.condition, false))
+
+	const checked = sitesOnly ? matchedAny : !matchedOff
+
+	return {
+		checked,
+		fn: () => {
+			setView({
+				rules: produce(rules, (d) => {
+					if (checked) {
+						// 当前启用 -> 禁用.
+						if (sitesOnly) {
+							// 白名单模式: 移出白名单 (删除所有命中当前页面的启用规则).
+							removeMatchingRules(d, url)
+						} else {
+							// 非白名单模式: 加入黑名单 (添加 OFF 规则).
+							d.push(makeSiteRule("OFF", url.origin))
+						}
+					} else {
+						// 当前禁用 -> 启用.
+						if (sitesOnly) {
+							// 白名单模式: 加入白名单 (添加启用规则).
+							d.push(makeSiteRule("ON", url.origin))
+						} else {
+							// 非白名单模式: 移出黑名单 (删除命中的 OFF 规则).
+							removeMatchingRules(d, url, "OFF")
+						}
+					}
+				}),
+			})
+		},
+	}
+}
+
+function makeSiteRule(type: "ON" | "OFF", origin: string): URLRule {
+	const rule = getDefaultURLRule()
+	rule.type = type
+	rule.condition = getDefaultURLCondition()
+	const part = getDefaultURLConditionPart()
+	part.type = "STARTS_WITH"
+	part.valueStartsWith = origin
+	rule.condition.allowParts = [part]
+	return rule
+}
+
+function removeMatchingRules(rules: URLRule[], url: URL, type?: URLRule["type"]) {
+	for (let i = rules.length - 1; i >= 0; i--) {
+		const rule = rules[i]
+		if (!rule.enabled || !rule.condition || !hasActiveParts(rule.condition)) continue
+		if (type && rule.type !== type) continue
+		if (testURL(url.href, rule.condition, false)) {
+			rules.splice(i, 1)
+		}
 	}
 }
 
