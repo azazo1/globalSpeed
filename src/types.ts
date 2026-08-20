@@ -70,6 +70,8 @@ export type State = {
 	menuKeybinds?: Keybind[]
 	keybindsUrlCondition?: URLCondition
 	websitesAddedToUrlConditionsExclusion?: string[]
+	/** 仅允许匹配了 URL 规则的网站启用, 其他网站禁用并恢复默认速度. */
+	sitesOnly?: boolean
 	ghostMode?: boolean
 	ghostModeUrlCondition?: URLCondition
 	rules?: URLRule[]

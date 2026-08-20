@@ -651,6 +651,10 @@
 		"rules": {
 			"header": "URL Rules",
 			"!header": "Heading for the URL Rules section on the Options page",
+			"sitesOnly": "Enable only on matching websites",
+			"!sitesOnly": "Option label for the whitelist mode toggle",
+			"sitesOnlyTooltip": "When enabled, speed control and all effects are disabled on every other website. Add a URL rule below to allow a website.",
+			"!sitesOnlyTooltip": "Tooltip explaining whitelist mode",
 			"setTitleKeywords": "Set title keywords",
 			"!setTitleKeywords": "URL-rule menu action for adding page-title matching keywords",
 			"clearTitleKeywords": "Delete title keywords",

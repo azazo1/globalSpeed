@@ -343,6 +343,8 @@
 		},
 		"rules": {
 			"header": "URL规则",
+			"sitesOnly": "仅在匹配的网站上启用",
+			"sitesOnlyTooltip": "启用后, 其他所有网站都会禁用速度控制和所有效果. 在下方添加 URL 规则来允许某个网站.",
 			"setTitleKeywords": "设置标题关键词",
 			"clearTitleKeywords": "删除标题关键词",
 			"ChangeTitleKeywords": "更改标题关键词",

@@ -1,6 +1,8 @@
 import { RefObject, useRef, useState } from "react"
 import { GearIcon } from "@/comps/GearIcon"
+import { RegularTooltip } from "@/comps/RegularTooltip"
 import { Select } from "@/comps/Select"
+import { Toggle } from "@/comps/Toggle"
 import { Tooltip } from "@/comps/Tooltip"
 import { gvar } from "@/globalVar"
 import { getSelectedParts } from "@/utils/configUtils"
@@ -17,11 +19,13 @@ import { DevWarning } from "./DevWarning"
 import { KebabList, KebabListProps } from "./KebabList"
 import { List } from "./List"
 import { ListItem } from "./ListItem"
+import { OptionField } from "./OptionField"
+import { OptionFieldLabel } from "./OptionFieldLabel"
 import { OptionsSection } from "./OptionsSection"
 import { URLModal } from "./URLModal"
 
 export function SectionRules(props: {}) {
-	const [view, setView] = useStateView({ rules: true })
+	const [view, setView] = useStateView({ rules: true, sitesOnly: true })
 	const listRef = useRef<HTMLDivElement>(null)
 	if (!view) return <div></div>
 
@@ -75,6 +79,20 @@ export function SectionRules(props: {}) {
 	return (
 		<OptionsSection>
 			<h2>{gvar.gsm.options.rules.header}</h2>
+			{/* 白名单模式开关 */}
+			<OptionField>
+				<OptionFieldLabel>
+					<span>{gvar.gsm.options.rules.sitesOnly}</span>
+					<RegularTooltip title={gvar.gsm.options.rules.sitesOnlyTooltip} align="right" />
+				</OptionFieldLabel>
+				<Toggle
+					aria-label={gvar.gsm.options.rules.sitesOnly}
+					value={!!view.sitesOnly}
+					onChange={(e) => {
+						setView({ sitesOnly: !view.sitesOnly })
+					}}
+				/>
+			</OptionField>
 			{isFirefox() ? null : <DevWarning forUrlRules={true} hasJs={rules?.some((r) => r.enabled && r.type === "JS")} />}
 			<List listRef={listRef} spacingChange={handleSpacingChange}>
 				{rules.map((rule, i) => (

@@ -228,6 +228,8 @@ export class ConfigSync {
 		} else {
 			delete gvar.os.speedSync.latest
 			gvar.os.speedSync.update()
+			// 禁用时恢复默认速度 (白名单模式下未匹配的网站等场景).
+			gvar.os.mediaTower.applySpeedToAll(1, false)
 		}
 	}
 	sendGhostOn = () => gvar.os.stratumServer.send({ type: "GHOST" })

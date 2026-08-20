@@ -45,6 +45,7 @@ export function getDefaultState(): State {
 		version: 14,
 		freshState: true,
 		firstUse: Date.now(),
+		sitesOnly: false,
 		pageKeybinds: getDefaultPageKeybinds(),
 		menuKeybinds: getDefaultMenuKeybinds(),
 		browserKeybinds: [] as Keybind[],

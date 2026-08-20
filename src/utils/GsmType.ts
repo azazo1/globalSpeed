@@ -650,6 +650,10 @@ export type Gsm = {
 		rules: {
 			/** URL Rules */
 			header: string
+			/** Only enable on websites matching these rules */
+			sitesOnly: string
+			/** When enabled, speed control and effects are disabled on all other websites. Add a URL rule to allow a website. */
+			sitesOnlyTooltip: string
 			/** Set title keywords */
 			setTitleKeywords: string
 			/** Delete title keywords */
