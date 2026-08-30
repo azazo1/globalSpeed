@@ -1,6 +1,7 @@
 {
 	"name": "__MSG_appName__",
 	"short_name": "Global Speed",
+	"key": "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAqUjMBKZ+on3J8E0rq71cZg3tmpJgLiuEl45i2/O0URigFN/rITozFX+0zkqtmG00N/CjQ5QOP3MHro6F97hr81ugEqpCZ7DuoX5V7KsNq3BgtAtG1rbvXhEgQa6aUfPnQYoE3y7ZkuClxvgm4lb9bQtsIx1wcgSh0eo+OTzCrw5fVwwHvgZ/Rmgjb61XS6Bga+WmqO6WWPzO06j9NuA8JP3SzidqUqhhQdcnzfLUUyifJqwJTQX5FfMljycQKvjmKd2xCtveVxkr/ALqHHnkukouJAvGifm1utQnZ/XWM4oQDYk7SRnIsyblmsClfy2Y9iXqlxfW9WmkUOZsJykiFQIDAQAB",
 	"version": "3.4.117",
 	"default_locale": "en",
 	"description": "__MSG_appDesc__",
