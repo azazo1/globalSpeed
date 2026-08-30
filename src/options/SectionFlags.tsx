@@ -1,6 +1,5 @@
 import { ComponentPropsWithoutRef, useEffect, useMemo, useState } from "react"
 import { GoX } from "react-icons/go"
-import { TfiMoreAlt } from "react-icons/tfi"
 import { GearIcon } from "@/comps/GearIcon"
 import { Minmax } from "@/comps/Minmax"
 import { NumericInput } from "@/comps/NumericInput"
@@ -10,17 +9,20 @@ import { Select } from "@/comps/Select"
 import { SliderMicro } from "@/comps/SliderMicro"
 import { Toggle } from "@/comps/Toggle"
 import { Tooltip } from "@/comps/Tooltip"
+import { Button } from "@/comps/ui/button"
 import { getDefaultURLCondition } from "@/defaults"
 import { DEFAULT_DOUBLE_TAP_THRESHOLD, DEFAULT_LONG_PRESS_THRESHOLD, getDefaultSpeedSlider } from "@/defaults/constants"
 import { gvar } from "@/globalVar"
 import { systemIsDark } from "@/hooks/useThemeSync"
 import { Context, CONTEXT_KEYS, InitialContext, StateView } from "@/types"
 import { clamp, cn, isMobile, produce } from "@/utils/helper"
+import { isPromoShowing, PROMO_VIEW_KEYS } from "@/utils/promoUtils"
 import { fetchView } from "@/utils/state"
 import { MAX_SPEED_CHROMIUM, MIN_SPEED_CHROMIUM } from "../defaults/constants"
 import { SetView, useStateView } from "../hooks/useStateView"
-import { LOCALE_MAP } from "../utils/gsm"
+import { getValidLocale, LOCALE_MAP } from "../utils/gsm"
 import { IndicatorModal } from "./IndicatorModal"
+import { LocalFilesField } from "./LocalFilesField"
 import { OptionField } from "./OptionField"
 import { OptionFieldLabel } from "./OptionFieldLabel"
 import { OptionsSection } from "./OptionsSection"
@@ -100,71 +102,95 @@ export function SectionFlags(props: {}) {
 			<h2>{gvar.gsm.options.flags.header}</h2>
 			<div className="mt-5">
 				{/* Language */}
-				<OptionField>
-					<OptionFieldLabel>
-						<span>{gvar.gsm.options.flags.language}</span>
 
-						{gvar.gsm.options.flags._languageTooltip && <RegularTooltip title={gvar.gsm.options.flags._languageTooltip} align="right" />}
-					</OptionFieldLabel>
-					<Select
-						aria-label={gvar.gsm.options.flags.language}
-						value={view.language || "detect"}
-						onChanged={(newValue) => {
-							setView({ language: newValue })
-						}}
-						options={Object.keys(LOCALE_MAP).map((key) => ({
-							key,
-							value: LOCALE_MAP[key].display,
-							title: LOCALE_MAP[key].title,
-						}))}
-					/>
-				</OptionField>
-
-				{/* Dark theme */}
-				<OptionField className="mb-7.5">
-					<span>{gvar.gsm.options.flags.darkTheme}</span>
-					<div className="grid grid-cols-[max-content_max-content] items-center gap-x-1.25">
-						<Toggle
-							aria-label={gvar.gsm.options.flags.darkTheme}
-							value={view.darkTheme ?? systemIsDark}
-							onChange={(v) => {
-								setView({ darkTheme: v })
-							}}
-						/>
-						{view.darkTheme != null && (
-							<Tooltip title={gvar.gsm.options.flags.darkThemeSystem}>
-								<button
-									aria-label={gvar.gsm.options.flags.darkThemeSystem}
-									className="icon-button"
-									onClick={() => {
-										setView({ darkTheme: null })
-									}}
-								>
-									<GoX size="1.6rem" />
-								</button>
-							</Tooltip>
-						)}
-					</div>
-				</OptionField>
-
-				{/* Permission */}
-				{!has && (
+				<div className="mb-7.5">
 					<OptionField>
 						<OptionFieldLabel>
-							<span>{gvar.gsm.options.flags.grantPermission}</span>
-							<RegularTooltip title={gvar.gsm.options.flags.grantPermissionTooltip} align="right" />
+							<span>{gvar.gsm.options.flags.language}</span>
+
+							{gvar.gsm.options.flags._languageTooltip && <RegularTooltip title={gvar.gsm.options.flags._languageTooltip} align="right" />}
 						</OptionFieldLabel>
-						<Toggle
-							aria-label={gvar.gsm.options.flags.grantPermission}
-							value={has}
-							onChange={(e) => {
-								chrome.permissions[has ? "remove" : "request"]({ origins: ["https://*/*", "http://*/*"] }).then((v) => {
-									setHas(has ? !v : v)
-								})
-							}}
-						/>
+						<div className="grid grid-cols-[max-content_max-content] items-center gap-x-1.25">
+							<Select
+								className="text-center"
+								aria-label={gvar.gsm.options.flags.language}
+								value={view.language || getValidLocale()}
+								onChanged={(newValue) => {
+									setView({ language: newValue === getValidLocale() ? null : newValue })
+								}}
+								options={Object.keys(LOCALE_MAP).map((key) => ({
+									key,
+									value: LOCALE_MAP[key].display,
+									title: LOCALE_MAP[key].title,
+								}))}
+							/>
+							{view.language != null && (
+								<Tooltip title={gvar.gsm.options.flags.languageSystem}>
+									<Button
+										variant="icon"
+										size="icon-auto"
+										aria-label={gvar.gsm.options.flags.languageSystem}
+										onClick={() => {
+											setView({ language: null })
+										}}
+									>
+										<GoX size="1.6rem" />
+									</Button>
+								</Tooltip>
+							)}
+						</div>
 					</OptionField>
-				)}
+
+					{/* Dark theme */}
+					<OptionField>
+						<span>{gvar.gsm.options.flags.darkTheme}</span>
+						<div className="grid grid-cols-[max-content_max-content] items-center gap-x-1.25">
+							<Toggle
+								aria-label={gvar.gsm.options.flags.darkTheme}
+								value={view.darkTheme ?? systemIsDark}
+								onChange={(v) => {
+									setView({ darkTheme: v === systemIsDark ? null : v })
+								}}
+							/>
+							{view.darkTheme != null && (
+								<Tooltip title={gvar.gsm.options.flags.darkThemeSystem}>
+									<Button
+										variant="icon"
+										size="icon-auto"
+										aria-label={gvar.gsm.options.flags.darkThemeSystem}
+										onClick={() => {
+											setView({ darkTheme: null })
+										}}
+									>
+										<GoX size="1.6rem" />
+									</Button>
+								</Tooltip>
+							)}
+						</div>
+					</OptionField>
+
+					{/* Local file and incognito access */}
+					<LocalFilesField />
+
+					{/* Permission */}
+					{!has && (
+						<OptionField>
+							<OptionFieldLabel>
+								<span>{gvar.gsm.options.flags.grantPermission}</span>
+								<RegularTooltip title={gvar.gsm.options.flags.grantPermissionTooltip} align="right" />
+							</OptionFieldLabel>
+							<Toggle
+								aria-label={gvar.gsm.options.flags.grantPermission}
+								value={has}
+								onChange={(e) => {
+									chrome.permissions[has ? "remove" : "request"]({ origins: ["https://*/*", "http://*/*"] }).then((v) => {
+										setHas(has ? !v : v)
+									})
+								}}
+							/>
+						</OptionField>
+					)}
+				</div>
 
 				{/* Show badge */}
 				{!isMobile() && (
@@ -333,15 +359,16 @@ export function SectionFlags(props: {}) {
 								defaultMax={defaultSlider.max}
 							/>
 							<Tooltip title={gvar.gsm.token.delete}>
-								<button
+								<Button
+									variant="icon"
+									size="icon-auto"
 									aria-label={gvar.gsm.token.delete}
-									className="icon-button"
 									onClick={() => {
 										setView({ speedSlider: null })
 									}}
 								>
 									<GoX size="1.6rem" />
-								</button>
+								</Button>
 							</Tooltip>
 						</div>
 					) : (
@@ -363,15 +390,16 @@ export function SectionFlags(props: {}) {
 					{view.holdToSpeed ? (
 						<div className="grid grid-cols-[4rem_max-content] gap-x-1.25">
 							<NumericInput noNull={true} min={0.1} max={20} value={view.holdToSpeed} onChange={(v) => setView({ holdToSpeed: v })} />
-							<button
+							<Button
+								variant="icon"
+								size="icon-auto"
 								aria-label={gvar.gsm.token.delete}
-								className="icon-button"
 								onClick={() => {
 									setView({ holdToSpeed: null })
 								}}
 							>
 								<GoX size="1.6rem" />
-							</button>
+							</Button>
 						</div>
 					) : (
 						<Toggle aria-label={gvar.gsm.options.flags.holdToSpeedUp} value={false} onChange={() => setView({ holdToSpeed: 2 })} />
@@ -379,9 +407,9 @@ export function SectionFlags(props: {}) {
 				</OptionField>
 
 				{!showMore ? (
-					<button aria-label={gvar.gsm.token.showMore} className="button-control px-3 py-2" onClick={() => setShowMore(true)}>
+					<Button aria-label={gvar.gsm.token.showMore} onClick={() => setShowMore(true)}>
 						{gvar.gsm.token.showMore}
-					</button>
+					</Button>
 				) : (
 					<>
 						{/* Long-press threshold */}
@@ -479,10 +507,35 @@ export function SectionFlags(props: {}) {
 							<span>{gvar.gsm.options.flags.speedPresets}</span>
 							<GearIcon className="text-foreground" onClick={(e) => setShowPresetModal(true)} />
 						</OptionField>
+
+						{/* Show promos */}
+						<PromoDismiss />
 					</>
 				)}
 			</div>
 		</OptionsSection>
+	)
+}
+
+/** Only rendered while promos are actually being shown. Toggling it off dismisses them for two weeks. */
+function PromoDismiss() {
+	const [view, setView] = useStateView(PROMO_VIEW_KEYS)
+	if (!isPromoShowing(view)) return null
+
+	return (
+		<OptionField>
+			<OptionFieldLabel>
+				<span>{gvar.gsm.options.flags.showPromos}</span>
+				<RegularTooltip title={gvar.gsm.options.flags.showPromosTooltip} align="right" />
+			</OptionFieldLabel>
+			<Toggle
+				aria-label={gvar.gsm.options.flags.showPromos}
+				value={true}
+				onChange={() => {
+					setView({ selfPromoHideTsR: Date.now() })
+				}}
+			/>
+		</OptionField>
 	)
 }
 

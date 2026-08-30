@@ -1,6 +1,5 @@
 import { CommandName } from "./defaults/commands"
 import { FilterName } from "./defaults/filters"
-import { TabInfo } from "./utils/browserUtils"
 import { Hotkey } from "./utils/keys"
 
 declare global {
@@ -81,6 +80,7 @@ export type State = {
 	firstUse?: number
 	clickedRating?: number
 	speedPresets?: number[]
+	eqPresetOverlay?: EqPresetOverlay
 	speedPresetRows?: number
 	speedPresetPadding?: number
 	speedSmallStep?: number
@@ -119,6 +119,7 @@ export type StateViewSelector = {
 export type IndicatorInit = {
 	backgroundColor?: string
 	textColor?: string
+	outlineWidth?: number
 	scaling?: number
 	rounding?: number
 	duration?: number
@@ -195,6 +196,19 @@ export const REVERSE_ORL_GROUP = Object.fromEntries(ORL_CONTEXT_KEYS.map((k) => 
 export const AUDIO_CONTEXT_KEYS = ["enabled", "monoOutput", "audioFx", "audioFxAlt", "audioPan"] as (keyof Context)[]
 export const AUDIO_CONTEXT_KEYS_SET = new Set(AUDIO_CONTEXT_KEYS)
 
+export type EqPreset = {
+	name: string
+	values: number[]
+}
+
+/** Diff laid over the built-in equalizer presets, so both kinds can be added to and deleted. */
+export type EqPresetOverlay = {
+	/** Presets the user saved. Wins over a built-in of the same name. */
+	added?: EqPreset[]
+	/** Built-ins the user deleted, as `<bandCount>:<name>`. */
+	removed?: string[]
+}
+
 export type AudioFx = {
 	pitch: number
 	jungleMode?: boolean
@@ -214,7 +228,6 @@ export enum AdjustMode {
 	ADD,
 	CYCLE,
 	ITC,
-	ITC_REL,
 }
 
 export enum Duration {
@@ -260,8 +273,9 @@ export type ReferenceValues = {
 	sliderMin?: number
 	sliderMax?: number
 	sliderStep?: number
-	itcStep?: number
-	wrappable?: boolean
+	/** Interactive range. Narrower than the slider's where dragging the full span is useless. */
+	itcMin?: number
+	itcMax?: number
 }
 
 export enum CommandGroup {
@@ -294,7 +308,6 @@ export type Keybind = {
 	greedy?: boolean
 	ifMedia?: boolean
 	valueNumber?: number
-	valueNumberAlt?: number
 	valueItcMin?: number
 	valueItcMax?: number
 	valueCycle?: number[]
@@ -305,15 +318,10 @@ export type Keybind = {
 	invertIndicator?: boolean
 
 	relativeToSpeed?: boolean
-	fastSeek?: boolean
 	showNetDuration?: number
 	wraparound?: boolean
-	itcWraparound?: boolean
 	autoPause?: boolean
 	skipPauseSmall?: boolean
-	pauseWhileScrubbing?: boolean
-	seekOnce?: boolean
-	noHold?: boolean
 	skipToggleSpeed?: boolean
 	direct?: boolean
 	ignoreNavigate?: boolean
@@ -434,37 +442,30 @@ export type URLCondition = {
 }
 
 export type MediaProbe = {
-	currentTime: number
-	duration: number
-	paused: boolean
-	volume: number
-	fps: number
 	formatted?: string
 	fullyLooped?: boolean
 }
 
+/** Spawns a persistent slider row on the page for an AdjustMode.ITC keybind. */
 export type ItcInit = {
-	mediaKey?: string
-	dontReleaseKeyUp?: boolean
-	mediaTabInfo?: TabInfo
-	mediaDuration?: number
-	shouldShow?: boolean
 	kb: Keybind
+	label?: string
+	/** Commands (or filters, for fxFilter) the row can be switched to. */
+	related?: ItcRelated[]
 
-	relative?: boolean
-	seekOnce?: boolean
 	resetTo?: number
-	original?: number
-	originalAlt?: number
-
 	step?: number
 	min?: number
 	max?: number
 
 	sliderMin?: number
 	sliderMax?: number
+}
 
-	wasPaused?: boolean
+export type ItcRelated = {
+	/** A CommandName, or a FilterName when the keybind's command is fxFilter. */
+	key: string
+	label: string
 }
 
 export type SvgFilter = {
