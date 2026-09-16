@@ -62,7 +62,7 @@ jobs:
 
       - name: 检出发布 tag
         if: steps.release_context.outputs.is_release == 'true'
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
         with:
           ref: ${{ steps.release_context.outputs.source_ref }}
 
@@ -104,12 +104,12 @@ jobs:
             artifact: buildFf/global-speed-firefox.zip
     steps:
       - name: 检出目标提交
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
         with:
           ref: ${{ needs.version.outputs.source_ref }}
 
       - name: 安装 Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v7
         with:
           node-version: "22"
           cache: npm
@@ -151,7 +151,7 @@ jobs:
 
       - name: 上传构建产物
         if: ${{ github.event_name == 'workflow_dispatch' || needs.version.outputs.is_release == 'true' }}
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: global-speed-${{ matrix.name }}
           path: dist/*.zip
@@ -166,7 +166,7 @@ jobs:
       contents: write
     steps:
       - name: 检出发布 tag
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
         with:
           ref: ${{ needs.version.outputs.source_ref }}
           fetch-depth: 0
@@ -248,7 +248,7 @@ jobs:
           fi
 
       - name: 下载构建产物
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
           path: release-artifacts
           merge-multiple: true
