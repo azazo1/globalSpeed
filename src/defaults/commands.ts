@@ -575,72 +575,47 @@ export function getDefaultPageKeybinds(): Keybind[] {
 	let kbs: Keybind[] = [
 		{
 			...commandInfos.speed.generate(),
-			key: "KeyA",
+			key: "KeyZ",
+			valueNumber: 1,
+		},
+		{
+			...commandInfos.speed.generate(),
+			key: "KeyX",
 			adjustMode: AdjustMode.ADD,
 			valueNumber: -0.1,
 		},
 		{
 			...commandInfos.speed.generate(),
-			key: "KeyS",
-			valueNumber: 1,
-		},
-		{
-			...commandInfos.speed.generate(),
-			key: "KeyD",
+			key: "KeyC",
 			adjustMode: AdjustMode.ADD,
 			valueNumber: 0.1,
 		},
 		{
-			...commandInfos.temporarySpeed.generate(),
-			key: "KeyG",
-			valueNumber: 3,
-			spacing: 1,
-		},
-		{
-			...commandInfos.seek.generate(),
-			key: "KeyZ",
+			...commandInfos.speed.generate(),
+			key: { shiftKey: true, code: "KeyX" },
 			adjustMode: AdjustMode.ADD,
-			valueNumber: -5,
+			valueNumber: -0.5,
 		},
 		{
-			...commandInfos.seek.generate(),
-			key: "KeyX",
+			...commandInfos.speed.generate(),
+			key: { shiftKey: true, code: "KeyC" },
 			adjustMode: AdjustMode.ADD,
+			valueNumber: 0.5,
+			spacing: 2,
 		},
 		{
 			...commandInfos.seek.generate(),
-			key: { shiftKey: true, code: "KeyZ" },
+			key: "KeyD",
 			adjustMode: AdjustMode.ADD,
 			duration: Duration.FRAMES,
 			valueNumber: -1,
 		},
 		{
 			...commandInfos.seek.generate(),
-			key: { shiftKey: true, code: "KeyX" },
+			key: "KeyF",
 			adjustMode: AdjustMode.ADD,
 			duration: Duration.FRAMES,
 			valueNumber: 1,
-			spacing: 1,
-		},
-		{
-			...commandInfos.fullscreen.generate(),
-			key: { shiftKey: true, code: "KeyF" },
-			direct: true,
-		},
-		{
-			...commandInfos.setMark.generate(),
-			key: { shiftKey: true, code: "KeyW" },
-			valueString: "mark1",
-		},
-		{
-			...commandInfos.seekMark.generate(),
-			key: "KeyW",
-			valueString: "mark1",
-		},
-		{
-			...commandInfos.loop.generate(),
-			key: "KeyR",
-			valueString: "mark1",
 		},
 	]
 	return kbs
